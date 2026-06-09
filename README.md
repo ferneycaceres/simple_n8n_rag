@@ -2,6 +2,10 @@
 
 Stack de automatización con n8n, PostgreSQL, PGVector y pgAdmin, orientado a flujos RAG (Retrieval-Augmented Generation) con embeddings de Gemini.
 
+## Diagrama del flujo
+
+![Diagrama RAG n8n](rag_n8n.png)
+
 ---
 
 ## Servicios
