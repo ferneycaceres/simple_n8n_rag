@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - postgres_network
+    ports:
+      - "5433:5432"
+
+  pgvector:
+    image: pgvector/pgvector:pg17
+    container_name: pgvector
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    networks:
+      - postgres_network
+    ports:
+      - "5434:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_ui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/pgpass:ro
+    networks:
+      - postgres_network
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n_app
+    restart: always
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: postgres
+      DB_POSTGRESDB_USER: postgres
+      DB_POSTGRESDB_PASSWORD: postgres
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: admin
+      N8N_BASIC_AUTH_PASSWORD: admin
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      N8N_DEFAULT_BINARY_DATA_MODE: filesystem
+      N8N_ALLOW_FILE_ACCESS_TO_PATHS: /home/node/.n8n-files
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./files:/home/node/.n8n-files
+    networks:
+      - postgres_network
+    ports:
+      - "5678:5678"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  pgvector_data:
+  n8n_data:
+
+networks:
+  postgres_network:
+    driver: bridge
