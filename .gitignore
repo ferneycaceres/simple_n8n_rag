@@ -2,3 +2,4 @@ files/
 pgadmin/pgpass
 .DS_Store
 .claude/
+.mcp.json
